@@ -26,16 +26,16 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.viewpager.widget.ViewPager;
-
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.ViewPager;
 
 /**
  * 日历布局
@@ -47,32 +47,32 @@ public class CalendarView extends FrameLayout {
     /**
      * 抽取自定义属性
      */
-    private final CalendarViewDelegate mDelegate;
+    protected CalendarViewDelegate mDelegate;
 
     /**
      * 自定义自适应高度的ViewPager
      */
-    private MonthViewPager mMonthPager;
+    protected MonthViewPager mMonthPager;
 
     /**
      * 日历周视图
      */
-    private WeekViewPager mWeekPager;
+    protected WeekViewPager mWeekPager;
 
     /**
      * 星期栏的线
      */
-    private View mWeekLine;
+    protected View mWeekLine;
 
     /**
      * 月份快速选取
      */
-    private YearViewPager mYearViewPager;
+    protected YearViewPager mYearViewPager;
 
     /**
      * 星期栏
      */
-    private WeekBar mWeekBar;
+    protected WeekBar mWeekBar;
 
     /**
      * 日历外部收缩布局
@@ -87,16 +87,22 @@ public class CalendarView extends FrameLayout {
     public CalendarView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         mDelegate = new CalendarViewDelegate(context, attrs);
-        init(context);
+        init(context, attrs);
+
+        if (isInEditMode() && mYearViewPager != null && mDelegate.showYearView) {
+            mYearViewPager.setVisibility(View.VISIBLE);
+        }
     }
+
+    public int calendarLayoutId = R.layout.cv_layout_calendar_view;
 
     /**
      * 初始化
      *
      * @param context context
      */
-    private void init(Context context) {
-        LayoutInflater.from(context).inflate(R.layout.cv_layout_calendar_view, this, true);
+    protected void init(Context context, @Nullable AttributeSet attrs) {
+        LayoutInflater.from(context).inflate(calendarLayoutId, this, true);
         FrameLayout frameContent = findViewById(R.id.frameContent);
         this.mWeekPager = findViewById(R.id.vp_week);
         this.mWeekPager.setup(mDelegate);
@@ -111,6 +117,11 @@ public class CalendarView extends FrameLayout {
         frameContent.addView(mWeekBar, 2);
         mWeekBar.setup(mDelegate);
         mWeekBar.onWeekStartChange(mDelegate.getWeekStart());
+
+        OnClassInitializeListener listener = mDelegate.mClassInitializeListener;
+        if (listener != null) {
+            listener.onClassInitialize(mDelegate.getWeekBarClass(), mWeekBar);
+        }
 
         this.mWeekLine = findViewById(R.id.line);
         this.mWeekLine.setBackgroundColor(mDelegate.getWeekLineBackground());
@@ -293,6 +304,9 @@ public class CalendarView extends FrameLayout {
         return mDelegate.getCurrentDay().getYear();
     }
 
+    public CalendarViewDelegate getDelegate() {
+        return mDelegate;
+    }
 
     /**
      * 打开日历年月份快速选择
@@ -309,7 +323,7 @@ public class CalendarView extends FrameLayout {
      *
      * @param year 年
      */
-    private void showSelectLayout(final int year) {
+    protected void showSelectLayout(final int year) {
         if (mParentLayout != null && mParentLayout.mContentView != null) {
             if (!mParentLayout.isExpand()) {
                 mParentLayout.expand();
@@ -382,7 +396,7 @@ public class CalendarView extends FrameLayout {
      *
      * @param position 某一年
      */
-    private void closeSelectLayout(final int position) {
+    protected void closeSelectLayout(final int position) {
         mYearViewPager.setVisibility(GONE);
         mWeekBar.setVisibility(VISIBLE);
         if (position == mMonthPager.getCurrentItem()) {
@@ -757,7 +771,7 @@ public class CalendarView extends FrameLayout {
      *
      * @param cls MonthView.class
      */
-    public final void setMonthView(Class<?> cls) {
+    public void setMonthView(Class<?> cls) {
         if (cls == null) {
             return;
         }
@@ -811,6 +825,11 @@ public class CalendarView extends FrameLayout {
         mWeekBar.onWeekStartChange(mDelegate.getWeekStart());
         this.mMonthPager.mWeekBar = mWeekBar;
         mWeekBar.onDateSelected(mDelegate.mSelectedCalendar, mDelegate.getWeekStart(), false);
+
+        OnClassInitializeListener listener = mDelegate.mClassInitializeListener;
+        if (listener != null) {
+            listener.onClassInitialize(mDelegate.getWeekBarClass(), mWeekBar);
+        }
     }
 
 
@@ -1243,7 +1262,7 @@ public class CalendarView extends FrameLayout {
      *
      * @param mSchemeDates mSchemeDatesMap 通过自己的需求转换即可
      */
-    public final void setSchemeDate(Map<String, Calendar> mSchemeDates) {
+    public void setSchemeDate(Map<String, Calendar> mSchemeDates) {
         this.mDelegate.mSchemeDatesMap = mSchemeDates;
         this.mDelegate.updateSelectCalendarScheme();
         this.mYearViewPager.update();
@@ -1254,7 +1273,7 @@ public class CalendarView extends FrameLayout {
     /**
      * 清空日期标记
      */
-    public final void clearSchemeDate() {
+    public void clearSchemeDate() {
         this.mDelegate.mSchemeDatesMap = null;
         this.mDelegate.clearSelectedScheme();
         mYearViewPager.update();
@@ -1665,6 +1684,28 @@ public class CalendarView extends FrameLayout {
     }
 
     /**
+     * 获取当前月份包含的Scheme信息
+     *
+     * @return return
+     */
+    public List<Calendar> getCurrentMonthSchemeCalendars() {
+        if (mMonthPager != null) {
+            BaseMonthView monthView = mMonthPager.getCurrentMonthView();
+            if (monthView != null) {
+                return monthView.getCurrentSchemeCalendars();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取当前月份的行数
+     */
+    public int getCurrentMonthLines() {
+        return mMonthPager.getCurrentMonthLines();
+    }
+
+    /**
      * 获取选择的日期
      *
      * @return 获取选择的日期
@@ -1892,8 +1933,15 @@ public class CalendarView extends FrameLayout {
      * 拦截日期是否可用事件
      */
     public interface OnCalendarInterceptListener {
+
+        /**
+         * 返回是否要拦截当前的日期
+         */
         boolean onCalendarIntercept(Calendar calendar);
 
+        /**
+         * 如果被拦截了, 则回调此方法
+         */
         void onCalendarInterceptClick(Calendar calendar, boolean isClick);
     }
 
@@ -1912,5 +1960,25 @@ public class CalendarView extends FrameLayout {
          */
         void onClickCalendarPadding(float x, float y, boolean isMonthView,
                                     Calendar adjacentCalendar, Object obj);
+    }
+
+    /**
+     * 2021-10-20
+     * class 对象创建时的初始化监听
+     */
+    public interface OnClassInitializeListener {
+        void onClassInitialize(Class<?> cls, View view);
+    }
+
+    public void setOnClassInitialize(OnClassInitializeListener listener) {
+        this.mDelegate.mClassInitializeListener = listener;
+    }
+
+    public interface OnVerticalItemInitializeListener {
+        void onVerticalItemInitialize(VerticalMonthRecyclerView.VerticalMonthViewHolder viewHolder, int position, int year, int month);
+    }
+
+    public void setOnVerticalItemInitialize(OnVerticalItemInitializeListener listener) {
+        this.mDelegate.mVerticalItemInitializeListener = listener;
     }
 }

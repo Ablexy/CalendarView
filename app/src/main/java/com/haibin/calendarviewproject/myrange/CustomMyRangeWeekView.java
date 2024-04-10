@@ -1,25 +1,24 @@
-package com.haibin.calendarviewproject.range;
+package com.haibin.calendarviewproject.myrange;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import com.haibin.calendarview.Calendar;
-import com.haibin.calendarview.RangeMonthView;
+import com.haibin.calendarview.RangeWeekView;
 
 /**
- * 范围选择月视图
+ * 范围选择周视图
  * Created by huanghaibin on 2018/9/13.
  */
 
-public class CustomRangeMonthView extends RangeMonthView {
+public class CustomMyRangeWeekView extends RangeWeekView {
 
     private int mRadius;
 
-    public CustomRangeMonthView(Context context) {
+    public CustomMyRangeWeekView(Context context) {
         super(context);
     }
-
 
     @Override
     protected void onPreviewHook() {
@@ -27,11 +26,13 @@ public class CustomRangeMonthView extends RangeMonthView {
         mSchemePaint.setStyle(Paint.Style.STROKE);
     }
 
+
     @Override
-    protected boolean onDrawSelected(Canvas canvas, Calendar calendar, int x, int y, boolean hasScheme,
+    protected boolean onDrawSelected(Canvas canvas, Calendar calendar, int x, boolean hasScheme,
                                      boolean isSelectedPre, boolean isSelectedNext) {
         int cx = x + mItemWidth / 2;
-        int cy = y + mItemHeight / 2;
+        int cy = mItemHeight / 2;
+
         if (isSelectedPre) {
             if (isSelectedNext) {
                 canvas.drawRect(x, cy - mRadius, x + mItemWidth, cy + mRadius, mSelectedPaint);
@@ -40,36 +41,28 @@ public class CustomRangeMonthView extends RangeMonthView {
                 canvas.drawCircle(cx, cy, mRadius, mSelectedPaint);
             }
         } else {
-            if(isSelectedNext){
+            if (isSelectedNext) {
                 canvas.drawRect(cx, cy - mRadius, x + mItemWidth, cy + mRadius, mSelectedPaint);
             }
             canvas.drawCircle(cx, cy, mRadius, mSelectedPaint);
-            //
+
         }
-
         return false;
     }
 
     @Override
-    protected boolean onDrawSelected(Canvas canvas, Calendar calendar, int x, int y, boolean hasScheme, boolean isSelectedPre, boolean isSelectedNext, boolean isSelectedEnd) {
-        return false;
-    }
-
-    @Override
-    protected void onDrawScheme(Canvas canvas, Calendar calendar, int x, int y, boolean isSelected) {
+    protected void onDrawScheme(Canvas canvas, Calendar calendar, int x, boolean isSelected) {
         int cx = x + mItemWidth / 2;
-        int cy = y + mItemHeight / 2;
+        int cy = mItemHeight / 2;
         canvas.drawCircle(cx, cy, mRadius, mSchemePaint);
     }
 
     @Override
-    protected void onDrawText(Canvas canvas, Calendar calendar, int x, int y, boolean hasScheme, boolean isSelected) {
-        float baselineY = mTextBaseLine + y;
+    protected void onDrawText(Canvas canvas, Calendar calendar, int x, boolean hasScheme, boolean isSelected) {
+        float baselineY = mTextBaseLine;
         int cx = x + mItemWidth / 2;
-
         boolean isInRange = isInRange(calendar);
         boolean isEnable = !onCalendarIntercept(calendar);
-
         if (isSelected) {
             canvas.drawText(String.valueOf(calendar.getDay()),
                     cx,

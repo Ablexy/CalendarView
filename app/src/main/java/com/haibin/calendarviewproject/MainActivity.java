@@ -26,6 +26,7 @@ import com.haibin.calendarviewproject.meizu.MeiZuMonthView;
 import com.haibin.calendarviewproject.meizu.MeizuWeekView;
 import com.haibin.calendarviewproject.mix.MixActivity;
 import com.haibin.calendarviewproject.multi.MultiActivity;
+import com.haibin.calendarviewproject.myrange.MyRangeActivity;
 import com.haibin.calendarviewproject.pager.ViewPagerActivity;
 import com.haibin.calendarviewproject.progress.ProgressActivity;
 import com.haibin.calendarviewproject.range.RangeActivity;
@@ -333,7 +334,8 @@ public class MainActivity extends BaseActivity implements
                 FullActivity.show(this);
                 break;
             case R.id.ll_range:
-                RangeActivity.show(this);
+//                RangeActivity.show(this);
+                MyRangeActivity.show(this);
                 break;
             case R.id.ll_simple:
                 SimpleActivity.show(this);

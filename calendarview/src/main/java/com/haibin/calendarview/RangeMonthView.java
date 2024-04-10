@@ -78,12 +78,13 @@ public abstract class RangeMonthView extends BaseMonthView {
         boolean hasScheme = calendar.hasScheme();
         boolean isPreSelected = isSelectPreCalendar(calendar, calendarIndex);
         boolean isNextSelected = isSelectNextCalendar(calendar, calendarIndex);
+        boolean isSameSelected = isStartEndSameCalendar(calendar);
 
         if (hasScheme) {
             //标记的日子
             boolean isDrawSelected = false;//是否继续绘制选中的onDrawScheme
             if (isSelected) {
-                isDrawSelected = onDrawSelected(canvas, calendar, x, y, true, isPreSelected, isNextSelected);
+                isDrawSelected = onDrawSelected(canvas, calendar, x, y, true, isPreSelected, isNextSelected,isSameSelected);
             }
             if (isDrawSelected || !isSelected) {
                 //将画笔设置为标记颜色
@@ -92,7 +93,7 @@ public abstract class RangeMonthView extends BaseMonthView {
             }
         } else {
             if (isSelected) {
-                onDrawSelected(canvas, calendar, x, y, false, isPreSelected, isNextSelected);
+                onDrawSelected(canvas, calendar, x, y, false, isPreSelected, isNextSelected,isSameSelected);
             }
         }
         onDrawText(canvas, calendar, x, y, hasScheme, isSelected);
@@ -255,6 +256,16 @@ public abstract class RangeMonthView extends BaseMonthView {
                 isCalendarSelected(nextCalendar);
     }
 
+    private  final boolean isStartEndSameCalendar(Calendar calendar){
+        if (mDelegate.mCalendarRangeSelectListener!=null){
+            if (mDelegate.mSelectedStartRangeCalendar!=null &&mDelegate.mSelectedEndRangeCalendar!=null){
+                return mItems.indexOf(mDelegate.mSelectedStartRangeCalendar)==mItems.indexOf(mDelegate.mSelectedEndRangeCalendar);
+            }
+        }
+        return false;
+    }
+
+
     /**
      * 绘制选中的日期
      *
@@ -269,6 +280,23 @@ public abstract class RangeMonthView extends BaseMonthView {
      */
     protected abstract boolean onDrawSelected(Canvas canvas, Calendar calendar, int x, int y, boolean hasScheme,
                                               boolean isSelectedPre, boolean isSelectedNext);
+
+    /**
+     * 绘制选中的日期
+     *
+     * @param canvas         canvas
+     * @param calendar       日历日历calendar
+     * @param x              日历Card x起点坐标
+     * @param y              日历Card y起点坐标
+     * @param hasScheme      hasScheme 非标记的日期
+     * @param isSelectedPre  上一个日期是否选中
+     * @param isSelectedNext 下一个日期是否选中
+     * @param isStartEndSame  是否是结束日期
+     * @return 是否继续绘制onDrawScheme，true or false
+     */
+    protected abstract boolean onDrawSelected(Canvas canvas, Calendar calendar, int x, int y, boolean hasScheme,
+                                              boolean isSelectedPre, boolean isSelectedNext,boolean isStartEndSame);
+
 
     /**
      * 绘制标记的日期,这里可以是背景色，标记色什么的

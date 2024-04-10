@@ -24,9 +24,9 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
-import androidx.annotation.Nullable;
-
 import java.util.List;
+
+import androidx.annotation.Nullable;
 
 /**
  * 年视图
@@ -35,7 +35,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public abstract class YearView extends View {
 
-    CalendarViewDelegate mDelegate;
+    protected CalendarViewDelegate mDelegate;
 
     /**
      * 当前月份日期的笔
@@ -247,8 +247,8 @@ public abstract class YearView extends View {
         updateStyle();
     }
 
-    final void updateStyle(){
-        if(mDelegate == null){
+    final void updateStyle() {
+        if (mDelegate == null) {
             return;
         }
         this.mCurMonthTextPaint.setTextSize(mDelegate.getYearViewDayTextSize());
@@ -277,10 +277,10 @@ public abstract class YearView extends View {
     final void init(int year, int month) {
         mYear = year;
         mMonth = month;
-        mNextDiff = CalendarUtil.getMonthEndDiff(mYear, mMonth, mDelegate.getWeekStart());
+        mNextDiff = CalendarUtil.getMonthEndDiff(null, mYear, mMonth, mDelegate.getWeekStart());
         int preDiff = CalendarUtil.getMonthViewStartDiff(mYear, mMonth, mDelegate.getWeekStart());
 
-        mItems = CalendarUtil.initCalendarForMonthView(mYear, mMonth, mDelegate.getCurrentDay(), mDelegate.getWeekStart());
+        mItems = CalendarUtil.initCalendarForMonthView(mDelegate, mYear, mMonth, mDelegate.getCurrentDay(), mDelegate.getWeekStart(), false);
 
         mLineCount = 6;
         addSchemesFromMap();
@@ -331,7 +331,7 @@ public abstract class YearView extends View {
         for (Calendar a : mItems) {
             if (mDelegate.mSchemeDatesMap.containsKey(a.toString())) {
                 Calendar d = mDelegate.mSchemeDatesMap.get(a.toString());
-                if(d == null){
+                if (d == null) {
                     continue;
                 }
                 a.setScheme(TextUtils.isEmpty(d.getScheme()) ? mDelegate.getSchemeText() : d.getScheme());

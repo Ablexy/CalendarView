@@ -21,19 +21,21 @@ import android.graphics.Color;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
-import androidx.annotation.Nullable;
-
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.Nullable;
+
 /**
  * Google规范化的属性委托,
  * 代码量多，但是不影响阅读性
  */
-final class CalendarViewDelegate {
+public class CalendarViewDelegate {
 
     /**
      * 周起始：周日
@@ -65,12 +67,12 @@ final class CalendarViewDelegate {
      */
     static final int LAST_MONTH_VIEW_SELECT_DAY_IGNORE_CURRENT = 2;
 
-    private int mDefaultCalendarSelectDay;
+    public int mDefaultCalendarSelectDay;
 
     /**
      * 周起始
      */
-    private int mWeekStart;
+    public int mWeekStart;
 
     /**
      * 全部显示
@@ -89,8 +91,13 @@ final class CalendarViewDelegate {
     /**
      * 月份显示模式
      */
-    private int mMonthViewShowMode;
+    public int mMonthViewShowMode;
 
+    /**
+     * 如果当前的月份, 包含今天, 那么强制将今天所在的周显示在视图底部,
+     * 并向上额外显示30天
+     */
+    public boolean monthPriorityShowWeekMode = false;
 
     /**
      * 默认选择模式
@@ -115,7 +122,7 @@ final class CalendarViewDelegate {
     /**
      * 选择模式
      */
-    private int mSelectMode;
+    public int mSelectMode;
 
 
     /**
@@ -130,7 +137,7 @@ final class CalendarViewDelegate {
     /**
      * 各种字体颜色，看名字知道对应的地方
      */
-    private int mCurDayTextColor,
+    protected int mCurDayTextColor,
             mCurDayLunarTextColor,
             mWeekTextColor,
             mSchemeTextColor,
@@ -179,7 +186,7 @@ final class CalendarViewDelegate {
     /**
      * 年视图字体大小
      */
-    private int mYearViewMonthTextSize,
+    protected int mYearViewMonthTextSize,
             mYearViewDayTextSize,
             mYearViewWeekTextSize;
 
@@ -193,7 +200,7 @@ final class CalendarViewDelegate {
     /**
      * 年视图字体和标记颜色
      */
-    private int mYearViewMonthTextColor,
+    protected int mYearViewMonthTextColor,
             mYearViewDayTextColor,
             mYearViewSchemeTextColor,
             mYearViewSelectTextColor,
@@ -203,7 +210,7 @@ final class CalendarViewDelegate {
     /**
      * 星期栏的背景、线的背景、年份背景
      */
-    private int mWeekLineBackground,
+    protected int mWeekLineBackground,
             mYearViewBackground,
             mWeekBackground;
 
@@ -220,48 +227,48 @@ final class CalendarViewDelegate {
     /**
      * 标记的主题色和选中的主题色
      */
-    private int mSchemeThemeColor, mSelectedThemeColor;
+    protected int mSchemeThemeColor, mSelectedThemeColor;
 
 
     /**
      * 自定义的日历路径
      */
-    private String mMonthViewClassPath;
+    protected String mMonthViewClassPath;
 
     /**
      * 月视图类
      */
-    private Class<?> mMonthViewClass;
+    protected Class<?> mMonthViewClass;
 
     /**
      * 自定义周视图路径
      */
-    private String mWeekViewClassPath;
+    protected String mWeekViewClassPath;
 
     /**
      * 周视图类
      */
-    private Class<?> mWeekViewClass;
+    protected Class<?> mWeekViewClass;
 
     /**
      * 自定义年视图路径
      */
-    private String mYearViewClassPath;
+    protected String mYearViewClassPath;
 
     /**
      * 周视图类
      */
-    private Class<?> mYearViewClass;
+    protected Class<?> mYearViewClass;
 
     /**
      * 自定义周栏路径
      */
-    private String mWeekBarClassPath;
+    protected String mWeekBarClassPath;
 
     /**
      * 自定义周栏
      */
-    private Class<?> mWeekBarClass;
+    protected Class<?> mWeekBarClass;
 
     /**
      * 年月视图是否打开
@@ -276,19 +283,19 @@ final class CalendarViewDelegate {
     /**
      * 最小年份和最大年份
      */
-    private int mMinYear, mMaxYear;
+    public int mMinYear, mMaxYear;
 
     /**
      * 最小年份和最大年份对应最小月份和最大月份
      * when you want set 2015-07 to 2017-08
      */
-    private int mMinYearMonth, mMaxYearMonth;
+    public int mMinYearMonth, mMaxYearMonth;
 
     /**
      * 最小年份和最大年份对应最小天和最大天数
      * when you want set like 2015-07-08 to 2017-08-30
      */
-    private int mMinYearDay, mMaxYearDay;
+    public int mMinYearDay, mMaxYearDay;
 
     /**
      * 日期和农历文本大小
@@ -313,8 +320,7 @@ final class CalendarViewDelegate {
     /**
      * 今天的日子
      */
-    private Calendar mCurrentDate;
-
+    public Calendar mCurrentDate;
 
     private boolean mMonthViewScrollable,
             mWeekViewScrollable,
@@ -394,14 +400,21 @@ final class CalendarViewDelegate {
     CalendarView.OnYearViewChangeListener mYearViewChangeListener;
 
     /**
+     * 2021-10-21
+     */
+    CalendarView.OnClassInitializeListener mClassInitializeListener;
+
+    CalendarView.OnVerticalItemInitializeListener mVerticalItemInitializeListener;
+
+    /**
      * 保存选中的日期
      */
-    Calendar mSelectedCalendar;
+    public Calendar mSelectedCalendar;
 
     /**
      * 保存标记位置
      */
-    Calendar mIndexCalendar;
+    public Calendar mIndexCalendar;
 
     /**
      * 多选日历
@@ -413,9 +426,30 @@ final class CalendarViewDelegate {
     /**
      * 选择范围日历
      */
-    Calendar mSelectedStartRangeCalendar, mSelectedEndRangeCalendar;
+    public Calendar mSelectedStartRangeCalendar, mSelectedEndRangeCalendar;
 
     private int mMinSelectRange, mMaxSelectRange;
+
+    /**
+     * 是否显示年视图, 预览模式下有效
+     */
+    boolean showYearView = false;
+
+    /**
+     * 星期资源文本id
+     */
+    public int weekStringResId = R.array.week_string_array;
+
+    /**
+     * 月份资源文本id
+     */
+    public int monthStringResId = R.array.month_string_array;
+
+    /**
+     * 预览的日期, 格式必须是yyyyMMdd.
+     * 请使用`tools:preview_calendar`
+     */
+    public String previewCalendar = null;
 
     CalendarViewDelegate(Context context, @Nullable AttributeSet attrs) {
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CalendarView);
@@ -458,6 +492,7 @@ final class CalendarViewDelegate {
                 FIRST_DAY_OF_MONTH);
 
         mMonthViewShowMode = array.getInt(R.styleable.CalendarView_month_view_show_mode, MODE_ALL_MONTH);
+        monthPriorityShowWeekMode = array.getBoolean(R.styleable.CalendarView_month_priority_show_week_mode, monthPriorityShowWeekMode);
         mWeekStart = array.getInt(R.styleable.CalendarView_week_start_with, WEEK_START_WITH_SUN);
         mSelectMode = array.getInt(R.styleable.CalendarView_select_mode, SELECT_MODE_DEFAULT);
         mMaxMultiSelectSize = array.getInt(R.styleable.CalendarView_max_multi_select_size, Integer.MAX_VALUE);
@@ -521,6 +556,11 @@ final class CalendarViewDelegate {
                 CalendarUtil.dipToPx(context, 12));
         mYearViewPaddingRight = (int) array.getDimension(R.styleable.CalendarView_year_view_padding_right,
                 CalendarUtil.dipToPx(context, 12));
+        showYearView = array.getBoolean(R.styleable.CalendarView_year_view_show, showYearView);
+
+        weekStringResId = array.getResourceId(R.styleable.CalendarView_week_string_id, weekStringResId);
+        monthStringResId = array.getResourceId(R.styleable.CalendarView_month_string_id, monthStringResId);
+        previewCalendar = array.getString(R.styleable.CalendarView_preview_calendar);
 
         if (mYearViewPadding != 0) {
             mYearViewPaddingLeft = mYearViewPadding;
@@ -543,9 +583,18 @@ final class CalendarViewDelegate {
         init();
     }
 
-    private void init() {
+    protected void init() {
         mCurrentDate = new Calendar();
         Date d = new Date();
+        if (!TextUtils.isEmpty(previewCalendar)) {
+            SimpleDateFormat format = (SimpleDateFormat) SimpleDateFormat.getInstance();
+            format.applyPattern("yyyyMMdd");
+            try {
+                d = format.parse(previewCalendar);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
         mCurrentDate.setYear(CalendarUtil.getDate("yyyy", d));
         mCurrentDate.setMonth(CalendarUtil.getDate("MM", d));
         mCurrentDate.setDay(CalendarUtil.getDate("dd", d));
@@ -631,7 +680,7 @@ final class CalendarViewDelegate {
         return mWeekTextColor;
     }
 
-    int getSchemeTextColor() {
+    public int getSchemeTextColor() {
         return mSchemeTextColor;
     }
 
@@ -953,7 +1002,7 @@ final class CalendarViewDelegate {
         }
     }
 
-    Calendar getCurrentDay() {
+    public Calendar getCurrentDay() {
         return mCurrentDate;
     }
 
@@ -1054,7 +1103,7 @@ final class CalendarViewDelegate {
         }
     }
 
-    Calendar createCurrentDate() {
+    public Calendar createCurrentDate() {
         Calendar calendar = new Calendar();
         calendar.setYear(mCurrentDate.getYear());
         calendar.setWeek(mCurrentDate.getWeek());
