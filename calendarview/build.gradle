@@ -1,5 +1,7 @@
 apply plugin: 'com.android.library'
 
+group = 'com.github.Ablexy'
+
 android {
     compileSdkVersion 31
 
