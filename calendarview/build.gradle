@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.github.Ablexy'
-version = '3.7.2'
+version = '3.7.1.1'
 
 android {
     compileSdkVersion 31
@@ -13,8 +13,8 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 372
-        versionName "3.7.2"
+        versionCode 373
+        versionName "3.7.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
@@ -55,7 +55,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.Ablexy'
                 artifactId = 'calendarview'
-                version = '3.7.2'
+                version = '3.7.1.1'
             }
         }
     }
