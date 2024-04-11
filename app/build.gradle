@@ -6,7 +6,7 @@ android {
     //noinspection GradleDependency
     defaultConfig {
         applicationId "com.haibin.calendarviewproject"
-        minSdkVersion 15
+        minSdkVersion 21
         //noinspection OldTargetApi
         targetSdkVersion 31
         versionCode 1
