@@ -40,7 +40,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.5.0'
 
     testImplementation 'junit:junit:4.12'
-    implementation project(':calendarview')
-//    implementation 'com.github.Ablexy:CalendarView:3.7.1'
+//    implementation project(':calendarview')
+    implementation 'com.github.Ablexy:CalendarView:3.7.2'//韵乾通可用,version和代码设置的version不同可用
   
 }

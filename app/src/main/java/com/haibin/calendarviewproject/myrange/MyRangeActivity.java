@@ -101,7 +101,7 @@ public class MyRangeActivity extends BaseActivity implements
         startCalendar.setYear(calendar1.get(java.util.Calendar.YEAR));
         startCalendar.setMonth(calendar1.get(java.util.Calendar.MONTH)+1);
         startCalendar.setDay(calendar1.get(java.util.Calendar.DAY_OF_MONTH));
-        mCalendarView.setSelectStartCalendar(startCalendar);
+        mCalendarView.setSelectStartCalendar(Calendar.fromCalendar(calendar1));
         mCalendarView.setSelectEndCalendar(startCalendar);
 
         int year = mCalendarView.getCurYear();
